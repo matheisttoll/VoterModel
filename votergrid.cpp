@@ -2,7 +2,7 @@
 #include <iostream>
 
 VoterGrid::VoterGrid() {
-    initialize(256, 256, 0.5);
+    initialize(512, 256, 0.5);
 }
 
 void VoterGrid::initialize(int w, int h, double theta) {
@@ -14,52 +14,52 @@ void VoterGrid::initialize(int w, int h, double theta) {
     }
     grid = new bool[size];
 
-    if(times) {
-        delete [] times;
+    while(!queue.empty()) {
+        queue.pop();
     }
-    std::bernoulli_distribution initial_dist{theta};
-    times = new float[size];
+
+    std::bernoulli_distribution initial_dist(theta);
     for(int i = 0; i < size; i++) {
-        times[i] = exp_dist(gen);
         grid[i] = initial_dist(gen);
+        queue.push(std::make_pair(exp_dist(gen),i));
     }
 }
 
-float VoterGrid::step() {
-    int min_index = 0;
-    for(int i = 1; i < size; i++) {
-        if(times[i] < times[min_index]) {
-            min_index = i;
-        }
-    }
-    float time_step = times[min_index];
-    cur_time += time_step;
-    for(int i = 0; i < size; i++) {
-        times[i] -= time_step;
-    }
-    times[min_index] = exp_dist(gen);
+
+
+voter VoterGrid::step() {
+    voter voter_to_change = queue.top();
+    queue.pop();
+    int min_index = std::get<1>(voter_to_change);
+    cur_time = std::get<0>(voter_to_change);
+
+    queue.push(std::make_pair(cur_time + exp_dist(gen), min_index));
     int side = unif_dist(gen);
-    int row = size / width;
-    int col = size % width;
+    int row = get_row(min_index);
+    int col = get_col(min_index);
     switch (side) {
     case 0:  // links
-        grid[min_index] = grid[index(row, col-1)];
+        grid[min_index] = get_opinion(row, col-1);
         break;
 
     case 1:  // rechts
-        grid[min_index] = grid[index(row, col+1)];
+        grid[min_index] = get_opinion(row, col+1);
         break;
 
     case 2:  // oben
-        grid[min_index] = grid[index(row-1, col)];
+        grid[min_index] = get_opinion(row-1, col);
         break;
 
     case 3:  // unten
-        grid[min_index] = grid[index(row+1, col)];
+        grid[min_index] = get_opinion(row+1, col);
+        break;
+
+    default:
+        std::cout << "Warnung: Nachbarauswahl gescheitert!" << std::endl;
         break;
     }
-    // std::cout << time_step << std::endl;
-    return time_step;
+    //std::cout << "Zeit: " << cur_time << " und Voter: " << min_index << std::endl;
+    return voter_to_change;
 }
 
 void VoterGrid::start() {
@@ -82,15 +82,16 @@ int VoterGrid::get_height() {
     return height;
 }
 
+int VoterGrid::get_row(int index) {
+    return index / width;
+}
+
+int VoterGrid::get_col(int index) {
+    return index % width;
+}
+
 int VoterGrid::index(int x, int y) {
-    if(y < 0) {
-        y = height - 1;
-    } else if(y >= height) {
-        y = 0;
-    } else if(x < 0) {
-        x = width - 1;
-    } else if(x >= width) {
-        x = 0;
-    }
-    return width * y + x;
+    int new_x = (x + width) % width;
+    int new_y = (y + height) % height;
+    return width * new_y + new_x;
 }
