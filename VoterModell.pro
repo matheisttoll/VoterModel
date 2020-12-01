@@ -11,8 +11,7 @@ CONFIG += c++11
 SOURCES += \
     animationwidget.cpp \
     main.cpp \
-    animationwindow.cpp \
-    votergrid.cpp
+    animationwindow.cpp
 
 HEADERS += \
     animationwidget.h \

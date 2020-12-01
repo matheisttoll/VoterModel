@@ -7,7 +7,8 @@
 #include <iostream>
 
 AnimationWidget::AnimationWidget(QWidget *parent) : QWidget(parent) {
-    setMinimumSize(grid.get_width()*squareSize, grid.get_height()*squareSize);
+    VoterGrid<2>::GridCoord dimensions = grid.get_dimensions();
+    setMinimumSize(dimensions[0]*squareSize, dimensions[1]*squareSize);
 }
 
 void AnimationWidget::paintEvent(QPaintEvent* event) {
@@ -16,13 +17,7 @@ void AnimationWidget::paintEvent(QPaintEvent* event) {
     if(rect.width() == squareSize && rect.height() == squareSize) {
         QPainter painter(this);
         int index = std::get<1>(last_changed);
-        int row = grid.get_row(index);
-        int col = grid.get_col(index);
-        if(grid.get_opinion(row,col)) {
-            painter.fillRect(rect, Qt::black);
-        } else {
-            painter.fillRect(rect, Qt::white);
-        }
+        painter.fillRect(rect, grid.get_opinion(index)? Qt::black: Qt::white);
     } else {
         paintAll();
         //fullRedraw = false;
@@ -46,16 +41,16 @@ void AnimationWidget::startAnimation(bool) {
 
 void AnimationWidget::paintAll() {
     QPainter painter(this);
-    int width = grid.get_width();
-    int height = grid.get_height();
+    VoterGrid<2>::GridCoord dimensions = grid.get_dimensions();
+    int width = dimensions[0];
+    int height = dimensions[1];
     int size = squareSize;
-    for(int y = 0; y < height; y++) {
-        for(int x = 0; x < width; x++) {
-            if(grid.get_opinion(x,y)) {
-                painter.fillRect(size*x,size*y,size,size, Qt::black);
-            } else {
-                painter.fillRect(size*x,size*y,size,size, Qt::white);
-            }
+    VoterGrid<2>::GridCoord coords;
+
+    for(coords[1] = 0; coords[1] < height; coords[1]++) {
+        for(coords[0] = 0; coords[0] < width; coords[0]++) {
+            //std::cout << "Paint: " << coords[0] << " " << coords[1] << std::endl;
+            painter.fillRect(size*coords[0],size*coords[1],size,size, grid.get_opinion(coords)? Qt::black: Qt::white);
         }
     }
 }
@@ -63,9 +58,11 @@ void AnimationWidget::paintAll() {
 void AnimationWidget::next() {
     last_changed = grid.step();
     int index = std::get<1>(last_changed);
-    int row = grid.get_row(index);
-    int col = grid.get_col(index);
+    VoterGrid<2>::GridCoord coords = grid.coordinates(index);
+    int row = coords[1];
+    int col = coords[0];
     int size = squareSize;
+    //std::cout << "Next: " << coords[0] << " " << coords[1] << std::endl;
     QRect rect{size*col,size*row, size,size};
     //std::cout << rect.left() << " " << rect.top() << " " << rect.width() << " " << rect.height() << std::endl;
     this->repaint(rect);
