@@ -15,10 +15,10 @@ public:
     void startAnimation(bool start);
 
 private:
-    VoterGrid<2> grid{VoterGrid<2>::GridCoord{512,256}};
-    int squareSize = 5;
-    voter last_changed{0.0f,-1};
-    void paintAll();
+    VoterGrid<2> grid{VoterGrid<2>::GridCoord{1024,512}};
+    int squareSize = 2;
+    VoterGrid<2>::GridCoord last_changed;
+    QRect to_redraw;
     bool fullRedraw = true;
     unsigned long bla = 0UL;
 

@@ -10,7 +10,6 @@
 #include <numeric>
 #include <iostream>
 
-typedef std::pair<float,int> voter;
 typedef float simuliation_time;
 
 template<int dim>
@@ -22,33 +21,34 @@ public:
     VoterGrid(GridCoord);
 
     void initialize(GridCoord coord, double theta);
-    voter step();
-    //void start();
-    //void stop();
+    bool step();
     bool get_opinion(GridCoord coord);
-    GridCoord get_dimensions();
-    GridCoord coordinates(int index);
-
     bool get_opinion(int index);
+    bool consens();
+    GridCoord coordinates(int index);
+    GridCoord get_dimensions();
+    GridCoord get_recent_opinion_lookaround();
 private:
     bool* grid = nullptr;
     GridCoord grid_dimensions;
     int size;
-    float cur_time = 0.0f;
+    double cur_time = 0.0;
     int decisions = 0;
+    int one_sites = 0;
+    GridCoord recent_opinion_lookaround;
 
     std::mt19937 gen{std::random_device{}()};
-    std::exponential_distribution<double> exp_dist{1};
     std::bernoulli_distribution bernoulli{0.5};
     std::uniform_int_distribution<int> dimension_dist{0,dim-1};
-    std::priority_queue<voter, std::vector<voter>, std::greater<voter> > queue;
+    std::uniform_int_distribution<int> next_voter_dist;
+    std::exponential_distribution<double> waiting_time_dist;
 
     int index(GridCoord coord);
 };
 
 template<int dim>
 VoterGrid<dim>::VoterGrid(GridCoord dimensions) {
-    initialize(dimensions, 0.5);
+    initialize(dimensions, 0.6);
 }
 
 template<int dim>
@@ -59,60 +59,53 @@ void VoterGrid<dim>::initialize(GridCoord dimensions, double theta) {
         delete [] grid;
     }
     grid = new bool[size];
-
-    while(!queue.empty()) {
-        queue.pop();
-    }
+    next_voter_dist = std::uniform_int_distribution<int>{0,size-1};
+    waiting_time_dist = std::exponential_distribution<double>{static_cast<double>(size)};
 
     std::bernoulli_distribution initial_dist(theta);
     for(int i = 0; i < size; i++) {
         grid[i] = initial_dist(gen);
-        queue.push(std::make_pair(exp_dist(gen),i));
+        one_sites += grid[i]? 1: 0;
     }
 }
 
 template<int dim>
-voter VoterGrid<dim>::step() {
-    voter voter_to_change = queue.top();
-    queue.pop();
-    int min_index = std::get<1>(voter_to_change);
+bool VoterGrid<dim>::step() {
+    cur_time += waiting_time_dist(gen);
 
-    GridCoord neighbour = coordinates(min_index);
+    int voter_index = next_voter_dist(gen);
+    recent_opinion_lookaround = coordinates(voter_index);
+
+    GridCoord neighbour = recent_opinion_lookaround;
     neighbour[dimension_dist(gen)] += bernoulli(gen)? 1: -1;
-    grid[min_index] = get_opinion(neighbour);
+    bool neighbour_opinion = get_opinion(neighbour);
+    if(grid[voter_index] != neighbour_opinion) {
+        one_sites += neighbour_opinion? 1: -1;
+        grid[voter_index] = neighbour_opinion;
+        return true;
+    }
 
-    cur_time = std::get<0>(voter_to_change);
-    queue.push(std::make_pair(cur_time + exp_dist(gen), min_index));
-
-    //std::cout << "Zeit: " << cur_time << " und Voter: " << min_index << std::endl;
-    return voter_to_change;
+    return false;
 }
 
 template<int dim>
 int VoterGrid<dim>::index(GridCoord coord) {
     int accum = 0;
     int temp = 1;
-    //std::cout << "Koordinaten: ";
     for(int i = 0; i < dim; i++) {
-        //std::cout << coord[i] << " ";
         accum += temp * ((coord[i] + grid_dimensions[i]) % grid_dimensions[i]);
         temp *= grid_dimensions[i];
     }
-    //std::cout << accum << std::endl;
-    //std::cout << std::endl << "Index: " << accum << std::endl;
     return accum;
 }
 
 template<int dim>
 typename VoterGrid<dim>::GridCoord VoterGrid<dim>::coordinates(int index) {
     typename VoterGrid<dim>::GridCoord coords;
-    //std::cout << "Index = " << index << ", Coordinates: ";
     for(int i = 0; i < dim; i++) {
         coords[i] = index % grid_dimensions[i];
         index /= grid_dimensions[i];
-        //std::cout << coords.at(i) << " ";
     }
-    //std::cout << std::endl;
     return coords;
 }
 
@@ -129,6 +122,16 @@ bool VoterGrid<dim>::get_opinion(int index) {
 template<int dim>
 typename VoterGrid<dim>::GridCoord VoterGrid<dim>::get_dimensions() {
     return grid_dimensions;
+}
+
+template<int dim>
+typename VoterGrid<dim>::GridCoord VoterGrid<dim>::get_recent_opinion_lookaround() {
+    return recent_opinion_lookaround;
+}
+
+template<int dim>
+bool VoterGrid<dim>::consens() {
+    return (one_sites == 0) && (one_sites == size);
 }
 
 

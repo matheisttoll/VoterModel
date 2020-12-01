@@ -12,21 +12,28 @@ AnimationWidget::AnimationWidget(QWidget *parent) : QWidget(parent) {
 }
 
 void AnimationWidget::paintEvent(QPaintEvent* event) {
+    QPainter painter(this);
     QRect rect = event->rect();
     //std::cout << rect.left() << " " << rect.top() << " " << rect.width() << " " << rect.height() << std::endl;
     if(rect.width() == squareSize && rect.height() == squareSize) {
-        QPainter painter(this);
-        int index = std::get<1>(last_changed);
-        painter.fillRect(rect, grid.get_opinion(index)? Qt::black: Qt::white);
+        painter.fillRect(rect, grid.get_opinion(last_changed)? Qt::black: Qt::white);
     } else {
-        paintAll();
-        //fullRedraw = false;
+        VoterGrid<2>::GridCoord dimensions = grid.get_dimensions();
+        int width = dimensions[0];
+        int height = dimensions[1];
+        QRect curRect{0,0,squareSize, squareSize};
+        VoterGrid<2>::GridCoord coords;
+
+        for(coords[1] = 0; coords[1] < height; coords[1]++) {
+            for(coords[0] = 0; coords[0] < width; coords[0]++) {
+                painter.fillRect(curRect, grid.get_opinion(coords)? Qt::black: Qt::white);
+                curRect.translate(squareSize,0);
+            }
+            curRect.translate(0, squareSize);
+            curRect.moveLeft(0);
+        }
     }
 }
-
-//void AnimationWidget::resizeEvent(QResizeEvent *) {
-//    fullRedraw = true;
-//}
 
 
 
@@ -39,31 +46,11 @@ void AnimationWidget::startAnimation(bool) {
     timer->start();
 }
 
-void AnimationWidget::paintAll() {
-    QPainter painter(this);
-    VoterGrid<2>::GridCoord dimensions = grid.get_dimensions();
-    int width = dimensions[0];
-    int height = dimensions[1];
-    int size = squareSize;
-    VoterGrid<2>::GridCoord coords;
-
-    for(coords[1] = 0; coords[1] < height; coords[1]++) {
-        for(coords[0] = 0; coords[0] < width; coords[0]++) {
-            //std::cout << "Paint: " << coords[0] << " " << coords[1] << std::endl;
-            painter.fillRect(size*coords[0],size*coords[1],size,size, grid.get_opinion(coords)? Qt::black: Qt::white);
-        }
-    }
-}
-
 void AnimationWidget::next() {
-    last_changed = grid.step();
-    int index = std::get<1>(last_changed);
-    VoterGrid<2>::GridCoord coords = grid.coordinates(index);
-    int row = coords[1];
-    int col = coords[0];
-    int size = squareSize;
-    //std::cout << "Next: " << coords[0] << " " << coords[1] << std::endl;
-    QRect rect{size*col,size*row, size,size};
-    //std::cout << rect.left() << " " << rect.top() << " " << rect.width() << " " << rect.height() << std::endl;
-    this->repaint(rect);
+    if(grid.step()) {
+        last_changed = grid.get_recent_opinion_lookaround();
+        int row = last_changed[1];
+        int col = last_changed[0];
+        repaint(QRect{squareSize*col,squareSize*row, squareSize, squareSize});
+    }
 }
