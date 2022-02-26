@@ -8,8 +8,3 @@ AnimationWindow::AnimationWindow(QWidget *parent) : QMainWindow(parent) {
 AnimationWindow::~AnimationWindow() {
 
 }
-
-void AnimationWindow::next() {
-    mainWidget.repaint();
-}
-

@@ -12,7 +12,6 @@ class AnimationWindow : public QMainWindow
 public:
     AnimationWindow(QWidget *parent = nullptr);
     ~AnimationWindow();
-    void next();
 
 private:
     AnimationWidget mainWidget{this};
