@@ -14,6 +14,6 @@ public:
     ~AnimationWindow();
 
 private:
-    AnimationWidget mainWidget{this};
+    AnimationWidget mainWidget;
 };
 #endif // ANIMATIONWINDOW_H
