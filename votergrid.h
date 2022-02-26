@@ -27,9 +27,12 @@ public:
     bool consens();
     GridCoord coordinates(int index);
     GridCoord get_dimensions();
+    int width();
+    int height();
+    int depth();
     GridCoord get_recent_opinion_lookaround();
 private:
-    bool* grid = nullptr;
+    std::vector<bool> grid;
     GridCoord grid_dimensions;
     int size;
     double cur_time = 0.0;
@@ -48,17 +51,14 @@ private:
 
 template<int dim>
 VoterGrid<dim>::VoterGrid(GridCoord dimensions) {
-    initialize(dimensions, 0.6);
+    initialize(dimensions, 0.5);
 }
 
 template<int dim>
 void VoterGrid<dim>::initialize(GridCoord dimensions, double theta) {
     grid_dimensions = dimensions;
     size = std::accumulate(grid_dimensions.begin(), grid_dimensions.end(), 1, std::multiplies<int>());
-    if(grid) {
-        delete [] grid;
-    }
-    grid = new bool[size];
+    grid.resize(size);
     next_voter_dist = std::uniform_int_distribution<int>{0,size-1};
     waiting_time_dist = std::exponential_distribution<double>{static_cast<double>(size)};
 
@@ -133,6 +133,24 @@ template<int dim>
 bool VoterGrid<dim>::consens() {
     return (one_sites == 0) && (one_sites == size);
 }
+
+template<int dim>
+int VoterGrid<dim>::width() {
+    return grid_dimensions[0];
+}
+
+template<int dim>
+int VoterGrid<dim>::height() {
+    return grid_dimensions[1];
+}
+
+//template<int dim>
+//int VoterGrid<dim>::depth() {
+//    return grid_dimensions[2];
+//}
+
+
+
 
 
 #endif // VOTERGRID_H
