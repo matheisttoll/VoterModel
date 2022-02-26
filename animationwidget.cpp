@@ -18,9 +18,8 @@ void AnimationWidget::paintEvent(QPaintEvent* event) {
     if(rect.width() == squareSize && rect.height() == squareSize) {
         painter.fillRect(rect, grid.get_opinion(last_changed)? Qt::black: Qt::white);
     } else {
-        VoterGrid<2>::GridCoord dimensions = grid.get_dimensions();
-        int width = dimensions[0];
-        int height = dimensions[1];
+        int width = grid.width();
+        int height = grid.height();
         QRect curRect{0,0,squareSize, squareSize};
         VoterGrid<2>::GridCoord coords;
 
