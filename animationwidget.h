@@ -9,14 +9,14 @@ class AnimationWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit AnimationWidget(QWidget *parent = nullptr);
+    explicit AnimationWidget(int width, int height, double theta, int size, QWidget *parent = nullptr);
     void paintEvent(QPaintEvent*);
     //void resizeEvent(QResizeEvent*);
     void startAnimation(bool start);
 
 private:
     VoterGrid<2> grid;
-    int squareSize = 4;
+    int squareSize;
     VoterGrid<2>::GridCoord last_changed;
     QRect to_redraw;
     unsigned long bla = 0UL;

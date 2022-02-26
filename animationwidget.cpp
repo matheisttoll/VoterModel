@@ -6,7 +6,8 @@
 #include <QRect>
 #include <iostream>
 
-AnimationWidget::AnimationWidget(QWidget *parent) : QWidget(parent), grid{VoterGrid<2>::GridCoord{470,258}, 0.5} {
+AnimationWidget::AnimationWidget(int width, int height, double theta, int size, QWidget *parent)
+    : QWidget(parent), grid{VoterGrid<2>::GridCoord{width,height}, theta}, squareSize(size) {
     VoterGrid<2>::GridCoord dimensions = grid.get_dimensions();
     setMinimumSize(dimensions[0]*squareSize, dimensions[1]*squareSize);
 }
