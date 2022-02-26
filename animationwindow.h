@@ -10,7 +10,7 @@ class AnimationWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    AnimationWindow(QWidget *parent = nullptr);
+    AnimationWindow(int width, int height, double theta, int size, QWidget *parent = nullptr);
     ~AnimationWindow();
 
 private:

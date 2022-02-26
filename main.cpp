@@ -11,39 +11,33 @@ int main(int argc, char *argv[]) {
 
     QCommandLineParser parser;
     parser.setApplicationDescription("Simulation of the Voter Model");
-//    parser.addHelpOption();
+    parser.addHelpOption();
 
-    QCommandLineOption width_option(QStringList() << "w" << "width",
-                                    "Width of simulation window."
-                                    "width"
-                                    "512");
-    parser.addOption(width_option);
-
-    QCommandLineOption height_option(QStringList() << "h" << "height",
-                                    "Height of simulation window."
-                                    "height"
-                                    "512");
-    parser.addOption(height_option);
+    parser.addPositionalArgument("width", "Width of simulation window.");
+    parser.addPositionalArgument("height", "Height of simulation window.");
 
     QCommandLineOption theta_option(QStringList() << "theta" << "probability" << "p",
-                                    "Initial probability for black."
-                                    "theta"
+                                    "Initial probability for black.",
+                                    "theta",
                                     "0.5");
     parser.addOption(theta_option);
 
     QCommandLineOption size_option(QStringList() << "s" << "size",
-                                    "Edge length of voter sqares in pixel."
-                                    "size"
+                                    "Edge length of voter sqares in pixel.",
+                                    "size",
                                     "2");
     parser.addOption(size_option);
 
     parser.process(app);
-    int width = parser.value(width_option).toInt();
-    int height = parser.value(height_option).toInt();
+    const QStringList args = parser.positionalArguments();
+    int width = args.at(0).toInt();
+    int height = args.at(1).toInt();
     int size = parser.value(size_option).toInt();
     double theta = parser.value(theta_option).toDouble();
 
-    AnimationWindow w;
+    std::cout << "width = " << width << ", height = " << height << ", size = " << size << ", theta = " << theta << std::endl;
+
+    AnimationWindow w{width, height, theta, size};
     w.show();
     return app.exec();
 }

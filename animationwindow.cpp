@@ -1,7 +1,7 @@
 #include "animationwindow.h"
 
-AnimationWindow::AnimationWindow(QWidget *parent)
-    : QMainWindow(parent), mainWidget{200, 200, 0.1, 5, this} {
+AnimationWindow::AnimationWindow(int width, int height, double theta, int size, QWidget *parent)
+    : QMainWindow(parent), mainWidget{width, height, theta, size, this} {
     setMinimumSize(mainWidget.minimumSize());
     mainWidget.startAnimation(true);
 }
