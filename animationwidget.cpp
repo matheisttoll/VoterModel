@@ -39,7 +39,6 @@ void AnimationWidget::paintEvent(QPaintEvent* event) {
 
 void AnimationWidget::startAnimation(bool) {
     repaint();
-    fullRedraw = false;
     QTimer* timer = new QTimer(this);
     QObject::connect(timer, &QTimer::timeout, this, &AnimationWidget::next);
     timer->start();

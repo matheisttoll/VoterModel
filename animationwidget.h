@@ -19,7 +19,6 @@ private:
     int squareSize = 4;
     VoterGrid<2>::GridCoord last_changed;
     QRect to_redraw;
-    bool fullRedraw = true;
     unsigned long bla = 0UL;
 
 public slots:
