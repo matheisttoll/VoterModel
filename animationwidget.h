@@ -15,7 +15,7 @@ public:
     void startAnimation(bool start);
 
 private:
-    VoterGrid<2> grid{VoterGrid<2>::GridCoord{470,258}, 0.5};
+    VoterGrid<2> grid;
     int squareSize = 4;
     VoterGrid<2>::GridCoord last_changed;
     QRect to_redraw;
