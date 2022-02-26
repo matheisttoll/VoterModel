@@ -18,9 +18,8 @@ class VoterGrid
 
 public:
     typedef std::array<int, dim> GridCoord;
-    VoterGrid(GridCoord);
+    VoterGrid(GridCoord, double theta);
 
-    void initialize(GridCoord coord, double theta);
     bool step();
     bool get_opinion(GridCoord coord);
     bool get_opinion(int index);
@@ -50,13 +49,7 @@ private:
 };
 
 template<int dim>
-VoterGrid<dim>::VoterGrid(GridCoord dimensions) {
-    initialize(dimensions, 0.5);
-}
-
-template<int dim>
-void VoterGrid<dim>::initialize(GridCoord dimensions, double theta) {
-    grid_dimensions = dimensions;
+VoterGrid<dim>::VoterGrid(GridCoord dimensions, double theta) : grid_dimensions(dimensions) {
     size = std::accumulate(grid_dimensions.begin(), grid_dimensions.end(), 1, std::multiplies<int>());
     grid.resize(size);
     next_voter_dist = std::uniform_int_distribution<int>{0,size-1};
